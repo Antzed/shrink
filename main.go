@@ -39,13 +39,6 @@ func main() {
 					log.Fatal(err2)
 				}
 				fmt.Println("done")
-				//dir, err := os.Getwd()
-				//if err != nil {
-				//	log.Println(err)
-				//}
-				//fmt.Printf("current directory is %q", dir)
-				//fmt.Println()
-				//tinyPath := dir + "/tiny.rb"
 
 				arguments := path.Args().Slice()
 
