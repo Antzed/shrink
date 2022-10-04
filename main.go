@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
 	"github.com/urfave/cli/v2"
@@ -8,6 +9,9 @@ import (
 	"os"
 	"os/exec"
 )
+
+//go:embed tiny.rb
+var tinyScript string
 
 func main() {
 	app := &cli.App{
@@ -24,7 +28,27 @@ func main() {
 				} else {
 					fmt.Println("bro what?")
 				}
+
+				f, err := os.Create("tiny.rb")
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer f.Close()
+				_, err2 := f.WriteString(tinyScript)
+				if err2 != nil {
+					log.Fatal(err2)
+				}
+				fmt.Println("done")
+				//dir, err := os.Getwd()
+				//if err != nil {
+				//	log.Println(err)
+				//}
+				//fmt.Printf("current directory is %q", dir)
+				//fmt.Println()
+				//tinyPath := dir + "/tiny.rb"
+
 				arguments := path.Args().Slice()
+
 				for _, s := range arguments {
 					cmd := exec.Command("ruby", "tiny.rb", s)
 					fmt.Printf("running...%q", cmd)
@@ -35,6 +59,10 @@ func main() {
 					}
 				}
 				fmt.Println("optimization complete")
+			}
+			e := os.Remove("tiny.rb")
+			if e != nil {
+				log.Fatal(e)
 			}
 
 			return nil
