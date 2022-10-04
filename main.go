@@ -59,10 +59,10 @@ func main() {
 					}
 				}
 				fmt.Println("optimization complete")
-			}
-			e := os.Remove("tiny.rb")
-			if e != nil {
-				log.Fatal(e)
+				e := os.Remove("tiny.rb")
+				if e != nil {
+					log.Fatal(e)
+				}
 			}
 
 			return nil
