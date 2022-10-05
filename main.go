@@ -8,13 +8,21 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 )
 
 //go:embed tiny.rb
 var tinyScript string
 
+var monthCompressionCount int
+
 func main() {
 	app := &cli.App{
+		//Commands: []*cli.Command{
+		//	{
+		//		Name: "",
+		//	},
+		//:wq:wq},
 		Name:  "shrink",
 		Usage: "introduction shrink",
 		Action: func(path *cli.Context) error {
@@ -47,15 +55,29 @@ func main() {
 					fmt.Printf("running...%q", cmd)
 					fmt.Println()
 					err := cmd.Run()
-					if err != nil {
-						log.Fatal(err)
-					}
+					checkErr(err)
 				}
 				fmt.Println("optimization complete")
+
+				content, err := os.ReadFile("count.txt")
+				checkErr(err)
+
+				data := string(content)
+
+				fmt.Println("data is: " + data)
+				dataInt, er := strconv.Atoi(data)
+				checkErr(er)
+				countLeft := 500 - dataInt
+				countLeftString := strconv.Itoa(countLeft)
+
+				fmt.Println("Used count: " + data + " Count left for this month: " + countLeftString)
+				monthCompressionCount = dataInt
+
 				e := os.Remove("tiny.rb")
-				if e != nil {
-					log.Fatal(e)
-				}
+				checkErr(e)
+
+				e2 := os.Remove("count.txt")
+				checkErr(e2)
 			}
 
 			return nil
@@ -63,6 +85,12 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func checkErr(err error) {
+	if err != nil {
 		log.Fatal(err)
 	}
 }
