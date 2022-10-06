@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/urfave/cli/v2"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -20,11 +18,6 @@ var monthCompressionCount int
 
 func main() {
 	app := &cli.App{
-		//Commands: []*cli.Command{
-		//	{
-		//		Name: "",
-		//	},
-		//:wq:wq},
 		Name:  "shrink",
 		Usage: "introduction shrink",
 		Action: func(path *cli.Context) error {
@@ -95,27 +88,9 @@ func main() {
 
 func checkCount(data int) {
 	if data == 500 {
-		email := RegisterEmail()
-		fmt.Println(email)
+		//email := RegisterEmail()
+		//fmt.Println(email)
 	}
-}
-
-func RegisterEmail() string {
-	url := "https://privatix-temp-mail-v1.p.rapidapi.com/request/mail/id/null/"
-
-	req, _ := http.NewRequest("GET", url, nil)
-
-	req.Header.Add("X-RapidAPI-Key", "792b0e438fmshfb9971aecd4728bp16d235jsn45bfd672c1be")
-	req.Header.Add("X-RapidAPI-Host", "privatix-temp-mail-v1.p.rapidapi.com")
-
-	res, _ := http.DefaultClient.Do(req)
-
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	fmt.Println(res)
-	return string(body)
-
 }
 
 func checkErr(err error) {
