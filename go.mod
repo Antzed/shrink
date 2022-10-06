@@ -3,10 +3,10 @@ module shrink
 go 1.19
 
 require (
-	github.com/atotto/clipboard v0.1.4
 	github.com/go-rod/rod v0.111.0
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/urfave/cli/v2 v2.17.1
+	mvdan.cc/xurls/v2 v2.4.0
 )
 
 require (
