@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/urfave/cli/v2"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -65,8 +67,10 @@ func main() {
 				data := string(content)
 
 				fmt.Println("data is: " + data)
+
 				dataInt, er := strconv.Atoi(data)
 				checkErr(er)
+				checkCount(dataInt)
 				countLeft := 500 - dataInt
 				countLeftString := strconv.Itoa(countLeft)
 
@@ -87,6 +91,31 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func checkCount(data int) {
+	if data == 500 {
+		email := RegisterEmail()
+		fmt.Println(email)
+	}
+}
+
+func RegisterEmail() string {
+	url := "https://privatix-temp-mail-v1.p.rapidapi.com/request/mail/id/null/"
+
+	req, _ := http.NewRequest("GET", url, nil)
+
+	req.Header.Add("X-RapidAPI-Key", "792b0e438fmshfb9971aecd4728bp16d235jsn45bfd672c1be")
+	req.Header.Add("X-RapidAPI-Host", "privatix-temp-mail-v1.p.rapidapi.com")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(res)
+	return string(body)
+
 }
 
 func checkErr(err error) {
