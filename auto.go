@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"github.com/go-rod/rod"
+	"github.com/goombaio/namegenerator"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -11,47 +14,75 @@ import (
 )
 
 func registerEmail() string {
-	url := "https://privatix-temp-mail-v1.p.rapidapi.com/request/domains/"
+	/*
+		url := "https://privatix-temp-mail-v1.p.rapidapi.com/request/domains/"
 
-	req, _ := http.NewRequest("GET", url, nil)
+		req, _ := http.NewRequest("GET", url, nil)
 
-	req.Header.Add("X-RapidAPI-Key", "792b0e438fmshfb9971aecd4728bp16d235jsn45bfd672c1be")
-	req.Header.Add("X-RapidAPI-Host", "privatix-temp-mail-v1.p.rapidapi.com")
+		req.Header.Add("X-RapidAPI-Key", "792b0e438fmshfb9971aecd4728bp16d235jsn45bfd672c1be")
+		req.Header.Add("X-RapidAPI-Host", "privatix-temp-mail-v1.p.rapidapi.com")
 
-	res, _ := http.DefaultClient.Do(req)
+		res, _ := http.DefaultClient.Do(req)
 
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-	fmt.Println(string(body))
+		defer res.Body.Close()
+		body, _ := ioutil.ReadAll(res.Body)
+		fmt.Println(string(body))
 
-	bodyClean := strings.Trim(string(body), "[")
-	fmt.Println(bodyClean)
-	bodyClean = strings.Trim(bodyClean, "]")
-	fmt.Println(bodyClean)
-	bodyClean = strings.Trim(bodyClean, "\"")
-	fmt.Println(bodyClean)
 
-	bodySlice := strings.Split(string(body), "\",\"")
+		bodyClean := strings.Trim(string(body), "[")
+		//fmt.Println(bodyClean)
+		bodyClean = strings.Trim(bodyClean, "]")
+		//fmt.Println(bodyClean)
+		bodyClean = strings.Trim(bodyClean, "\"")
+		//fmt.Println(bodyClean)
 
-	bodySliceLenAdjusted := len(bodySlice) - 1
+		bodySlice := strings.Split(string(body), "\",\"")
+	*/
+	domainSlice := []string{"@cevipsa.com", "@cpav3.com", "@cpav3.com", "@steveix.com", "@tenvil.com", "@tgvis.com", "@amozix.com", "@maxric.com"}
+	bodySliceLenAdjusted := len(domainSlice) - 1
 	randNum := rand.Intn(bodySliceLenAdjusted)
-	domain := bodySlice[randNum]
-	name := RandStringRunes(5)
+	domain := domainSlice[randNum]
+	name := RandStringRunes(10)
 	email := name + domain
+	fmt.Println(email)
 	return email
 
+	/*
+		// Launch a new browser with default options, and connect to it.
+		//browser := rod.New().MustConnect()
+
+		// Even you forget to close, rod will close it after main process ends.
+		//defer browser.MustClose()
+
+		// Create a new page
+		//page := browser.MustPage("https://10minemail.com/en/")
+
+		// We use css selector to get the search input element and input "git"
+		//page.MustElement("#tenmin > div.section-top-qr > div > div > div.col-xs-12.col-sm-12.col-md-12.col-lg-12.col-xl-6 > div.temp-emailbox > form > div.input-box-col.hidden-xs-sm > button").MustClick()
+		//text, _ := clipboard.ReadAll()
+		//return text */
 }
 
 func main() {
 
-	//email := registerEmail()
-	//md5 := md52.Sum([]byte(email))
-	//signUp()
-	getKey()
+	email := registerEmail()
+	//fmt.Println(email)
+	md5 := md5.Sum([]byte(email))
+	md5String := hex.EncodeToString(md5[:])
+	fmt.Println("the md5 hash is: " + md5String)
+	name := getName()
+	fmt.Println(name)
+	signUp(name, email)
+	time.Sleep(3 * time.Second)
+	getLink(md5String)
+	//getKey()
+	//string := RandStringRunes(20)
+	//fmt.Println(string)
 
 }
 
-func signUp(email string) {
+func signUp(name string, email string) {
+
 	// Launch a new browser with default options, and connect to it.
 	browser := rod.New().MustConnect()
 
@@ -62,11 +93,21 @@ func signUp(email string) {
 	page := browser.MustPage("https://tinypng.com/developers")
 
 	// We use css selector to get the search input element and input "git"
-	page.MustElement("##top > div > div > form > input:nth-child(1)").MustInput("lao ting")
+	page.MustElement("#top > div > div > form > input:nth-child(1)").MustInput(name)
 	//!!! need new name every time
 	page.MustElement("#top > div > div > form > input[type=email]:nth-child(2)").MustInput(email)
 
 	page.MustElement("#top > div > div > form > input[type=submit]:nth-child(3)").MustClick()
+
+	//if page.MustElement("#top > div > div > form > section").MustContainsElement(page.MustElement("#top > div > div > form > section")) {
+	//	fmt.Println("need to switch ip")
+	//} else {
+	//
+	//}
+
+	fmt.Println("finished")
+	time.Sleep(2 * time.Second)
+	page.MustWaitLoad().MustScreenshot("a.png")
 
 }
 
@@ -100,4 +141,31 @@ func RandStringRunes(n int) string {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+func getName() string {
+	seed := time.Now().UTC().UnixNano()
+	nameGenerator := namegenerator.NewNameGenerator(seed)
+
+	name := nameGenerator.Generate()
+	name = strings.ReplaceAll(name, "-", " ")
+	return name
+}
+
+func getLink(md5 string) {
+
+	url := "https://privatix-temp-mail-v1.p.rapidapi.com/request/mail/id/" + md5 + "/"
+
+	req, _ := http.NewRequest("GET", url, nil)
+
+	req.Header.Add("X-RapidAPI-Key", "792b0e438fmshfb9971aecd4728bp16d235jsn45bfd672c1be")
+	req.Header.Add("X-RapidAPI-Host", "privatix-temp-mail-v1.p.rapidapi.com")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	//fmt.Println(res)
+	fmt.Println(string(body))
 }
