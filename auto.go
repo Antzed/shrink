@@ -22,7 +22,7 @@ func registerEmail() string {
 
 	req, _ := http.NewRequest("GET", url, nil)
 
-	req.Header.Add("X-RapidAPI-Key", "792b0e438fmshfb9971aecd4728bp16d235jsn45bfd672c1be")
+	req.Header.Add("X-RapidAPI-Key", "")
 	req.Header.Add("X-RapidAPI-Host", "privatix-temp-mail-v1.p.rapidapi.com")
 
 	res, _ := http.DefaultClient.Do(req)
@@ -143,7 +143,7 @@ func getLink(md5 string) string {
 
 	req, _ := http.NewRequest("GET", url, nil)
 
-	req.Header.Add("X-RapidAPI-Key", "792b0e438fmshfb9971aecd4728bp16d235jsn45bfd672c1be")
+	req.Header.Add("X-RapidAPI-Key", "")
 	req.Header.Add("X-RapidAPI-Host", "privatix-temp-mail-v1.p.rapidapi.com")
 
 	res, _ := http.DefaultClient.Do(req)
