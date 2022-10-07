@@ -2,6 +2,10 @@
 a lightweight cli tool for compressing images
 --
 ---
-todo:
-- find ways to get temp email so the program can register for tiny api infinitly
+Note: This tool utilized services from RapidAPI. In order for you to use it, go to https://rapidapi.com/Privatix/api/temp-mail and subscribe to the Temp email api service, and input you api key in auto.go under the *getLink* and the *registerEmail* method:
+
+```go
+req.Header.Add("X-RapidAPI-Key", "!insert you key here!")//for both places
+req.Header.Add("X-RapidAPI-Host", "privatix-temp-mail-v1.p.rapidapi.com")
+```
 
