@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -11,10 +12,6 @@ import (
 	"strconv"
 	"strings"
 )
-
-//var monthCompressionCount int
-
-//var apiKey = []string{"3Jkz9YskWc7gb4qgj6shsh86MHMTKPTK"}
 
 func main() {
 	cliFunc()
@@ -36,15 +33,13 @@ func cliFunc() {
 					fmt.Println("bro what?")
 				}
 
-				if _, err := os.Stat("key.txt"); errors.Is(err, os.ErrNotExist) {
-					createKeyFile()
+				if _, err := os.Stat("credentials.txt"); errors.Is(err, os.ErrNotExist) {
+					APIFetch()
 				}
 
-				apiKey, err := os.ReadFile("key.txt")
-				checkErr(err)
+				apiKey := readKey("credentials.txt")
 
-				apiKeyString := string(apiKey)
-				tinyScript := writeRuby(apiKeyString)
+				tinyScript := writeRuby(apiKey)
 
 				f, err := os.Create("tiny.rb")
 				checkErr(err)
@@ -71,17 +66,19 @@ func cliFunc() {
 				checkErr(err)
 
 				data := string(content)
-				fmt.Println("data is: " + data)
+
 				data = strings.TrimRight(data, "\n")
 
 				dataInt, er := strconv.Atoi(data)
 				checkErr(er)
-				checkCount(dataInt)
+
 				countLeft := 500 - dataInt
 				countLeftString := strconv.Itoa(countLeft)
-
+				fmt.Println("data is: " + data)
 				fmt.Println("Used count: " + data + " Count left for this month: " + countLeftString)
 				//monthCompressionCount = dataInt
+
+				checkCount(dataInt)
 
 				e := os.Remove("tiny.rb")
 				checkErr(e)
@@ -100,10 +97,31 @@ func cliFunc() {
 
 }
 
+func readKey(fileName string) string {
+	file, err := os.Open(fileName)
+	checkErr(err)
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var key string
+	// optionally, resize scanner's capacity for lines over 64K, see next example
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "key:") {
+			line = strings.ReplaceAll(line, "key:", "")
+			key = line
+		}
+	}
+	err2 := scanner.Err()
+	checkErr(err2)
+
+	return key
+}
+
 func checkCount(data int) {
 	if data == 500 {
-		key := APIFetch()
-		updateKeyFile(key)
+		fmt.Println("quota fully used, fetching new quota...")
+		APIFetch()
 	}
 }
 
@@ -111,24 +129,6 @@ func checkErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func createKeyFile() {
-	f, err := os.Create("key.txt")
-	checkErr(err)
-	defer f.Close()
-	key := APIFetch()
-	_, err2 := f.WriteString(key)
-	checkErr(err2)
-}
-
-func updateKeyFile(key string) {
-	f, err := os.Open("key.txt")
-	checkErr(err)
-	defer f.Close()
-	f.Truncate(0)
-	_, err2 := f.WriteString(key)
-	checkErr(err2)
 }
 
 func writeRuby(key string) string {
@@ -144,10 +144,8 @@ func writeRuby(key string) string {
 	source.to_file("./output/"+arg.chop.chop.chop.chop+"_optimized.png")
 	end
 
-	`
+	compressions_this_month = Tinify.compression_count
+	File.write('./count.txt', compressions_this_month)`
 
 	return tinyScript
 }
-
-//compressions_this_month = Tinify.compression_count
-//File.write('./count.txt', compressions_this_month)

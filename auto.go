@@ -7,9 +7,11 @@ import (
 	"github.com/go-rod/rod"
 	"github.com/goombaio/namegenerator"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"mvdan.cc/xurls/v2"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -40,8 +42,7 @@ func registerEmail() string {
 	return email
 }
 
-func APIFetch() string {
-
+func APIFetch() {
 	email := registerEmail()
 	fmt.Println("registered temperory email: " + email)
 	md5 := md5.Sum([]byte(email))
@@ -53,7 +54,22 @@ func APIFetch() string {
 	link := getLink(md5String)
 	key := getKey(link)
 	fmt.Println("The api key retrived is: " + key)
-	return key
+
+	writeCredentials(email, name, link, key)
+
+}
+
+func writeCredentials(email string, name string, link string, key string) {
+	f, err := os.Create("credentials.txt")
+	checkErr(err)
+	defer f.Close()
+	var content string = `email:` + email + ` 
+name:` + name + ` 
+Dashboard:` + link + `
+key:` + key
+
+	_, err2 := f.WriteString(content)
+	checkErr(err2)
 
 }
 
@@ -76,7 +92,11 @@ func signUp(name string, email string) {
 
 	//fmt.Println("finished")
 	time.Sleep(2 * time.Second)
-	page.MustWaitLoad().MustScreenshot("a.png")
+
+	if err := os.Mkdir("debug", os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+	page.MustWaitLoad().MustScreenshot("debug/a.png")
 
 }
 
