@@ -40,7 +40,7 @@ func registerEmail() string {
 	return email
 }
 
-func main() {
+func APIFetch() string {
 
 	email := registerEmail()
 	fmt.Println("registered temperory email: " + email)
@@ -53,6 +53,7 @@ func main() {
 	link := getLink(md5String)
 	key := getKey(link)
 	fmt.Println("The api key retrived is: " + key)
+	return key
 
 }
 

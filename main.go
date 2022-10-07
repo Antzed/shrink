@@ -9,14 +9,18 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
-//go:embed tiny.rb
-var tinyScript string
+//var monthCompressionCount int
 
-var monthCompressionCount int
+//var apiKey = []string{"3Jkz9YskWc7gb4qgj6shsh86MHMTKPTK"}
 
 func main() {
+	cliFunc()
+}
+
+func cliFunc() {
 	app := &cli.App{
 		Name:  "shrink",
 		Usage: "introduction shrink",
@@ -24,7 +28,7 @@ func main() {
 			if path.Args().Get(0) == "" {
 				fmt.Println("this is shrink, a cli for shrinking images")
 			} else {
-				if _, err := os.Stat("/path/to/whatever"); err == nil {
+				if _, err := os.Stat("/output"); err == nil {
 					fmt.Println("output dir exists")
 				} else if errors.Is(err, os.ErrNotExist) {
 					os.Mkdir("output", os.ModePerm)
@@ -32,11 +36,20 @@ func main() {
 					fmt.Println("bro what?")
 				}
 
-				f, err := os.Create("tiny.rb")
-				if err != nil {
-					log.Fatal(err)
+				if _, err := os.Stat("key.txt"); errors.Is(err, os.ErrNotExist) {
+					createKeyFile()
 				}
+
+				apiKey, err := os.ReadFile("key.txt")
+				checkErr(err)
+
+				apiKeyString := string(apiKey)
+				tinyScript := writeRuby(apiKeyString)
+
+				f, err := os.Create("tiny.rb")
+				checkErr(err)
 				defer f.Close()
+
 				_, err2 := f.WriteString(tinyScript)
 				if err2 != nil {
 					log.Fatal(err2)
@@ -58,8 +71,8 @@ func main() {
 				checkErr(err)
 
 				data := string(content)
-
 				fmt.Println("data is: " + data)
+				data = strings.TrimRight(data, "\n")
 
 				dataInt, er := strconv.Atoi(data)
 				checkErr(er)
@@ -68,13 +81,13 @@ func main() {
 				countLeftString := strconv.Itoa(countLeft)
 
 				fmt.Println("Used count: " + data + " Count left for this month: " + countLeftString)
-				monthCompressionCount = dataInt
+				//monthCompressionCount = dataInt
 
 				e := os.Remove("tiny.rb")
 				checkErr(e)
 
-				e2 := os.Remove("count.txt")
-				checkErr(e2)
+				//e2 := os.Remove("count.txt")
+				//checkErr(e2)
 			}
 
 			return nil
@@ -84,12 +97,13 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
+
 }
 
 func checkCount(data int) {
 	if data == 500 {
-		//email := RegisterEmail()
-		//fmt.Println(email)
+		key := APIFetch()
+		updateKeyFile(key)
 	}
 }
 
@@ -98,3 +112,42 @@ func checkErr(err error) {
 		log.Fatal(err)
 	}
 }
+
+func createKeyFile() {
+	f, err := os.Create("key.txt")
+	checkErr(err)
+	defer f.Close()
+	key := APIFetch()
+	_, err2 := f.WriteString(key)
+	checkErr(err2)
+}
+
+func updateKeyFile(key string) {
+	f, err := os.Open("key.txt")
+	checkErr(err)
+	defer f.Close()
+	f.Truncate(0)
+	_, err2 := f.WriteString(key)
+	checkErr(err2)
+}
+
+func writeRuby(key string) string {
+
+	var tinyScript string = `gem "tinify"
+
+	require "tinify"
+	Tinify.key = "` + key + `"
+	puts "verified"
+
+	for arg in ARGV
+	source = Tinify.from_file(arg)
+	source.to_file("./output/"+arg.chop.chop.chop.chop+"_optimized.png")
+	end
+
+	`
+
+	return tinyScript
+}
+
+//compressions_this_month = Tinify.compression_count
+//File.write('./count.txt', compressions_this_month)
